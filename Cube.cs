@@ -1,77 +1,52 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.Events;
 
-[RequireComponent (typeof(Renderer))]
-[RequireComponent (typeof(CubeCollisionHandler))]
-public class Cube : MonoBehaviour
+[RequireComponent(typeof(Renderer))]
+[RequireComponent(typeof(CubeCollisionHandler))]
+public class Cube : Figure
 {
-    private float _minWaitSecond = 2;
-    private float _maxWaitSecond = 5;
-
     private CubeCollisionHandler _collisionHandler;
     private Renderer _renderer;
-    private bool _isColorChanged;
-    private Coroutine _waitCorutine;
-    private WaitForSeconds _waitSeconds;
+    private bool _isGroundTouched;
     private Color _baseColor;
-
-    public event UnityAction<Cube> WorkDone;
+    private Floor _lastFloor;
 
     private void Awake()
     {
         _collisionHandler = GetComponent<CubeCollisionHandler>();
-        _renderer = GetComponent<Renderer>();        
+        _renderer = GetComponent<Renderer>();
         _baseColor = _renderer.material.color;
     }
 
-    private void OnEnable()
+    protected override void OnEnable()
     {
-        _isColorChanged = false;
+        _isGroundTouched = false;
+        _lastFloor = null;
         _renderer.material.color = _baseColor;
-        _waitSeconds = new WaitForSeconds(GetRandomTime());
-        _collisionHandler.GroundTouched += TouchGround;
+        _collisionHandler.GroundTouched += OnTouchGround;
     }
 
     private void OnDisable()
     {
-        _collisionHandler.GroundTouched -= TouchGround;
-    }
-
-    private float GetRandomTime()
-    {
-        return Random.Range(_minWaitSecond, _maxWaitSecond + 1);
+        _collisionHandler.GroundTouched -= OnTouchGround;
     }
 
     private void ChangeColor()
     {
-        if(!_isColorChanged)
-        {
-            _renderer.material.color = new Color(Random.value, Random.value, Random.value);
-            _isColorChanged = true;
-        }
+        _renderer.material.color = new Color(Random.value, Random.value, Random.value);
     }
 
-    private void TouchGround()
+    private void OnTouchGround(Floor floor)
     {
-        ChangeColor();
-        StartWaitCorutine();
-    }
-
-    private void StartWaitCorutine()
-    {
-        if (_waitCorutine != null)
+        if (!_isGroundTouched)
         {
-            StopCoroutine(_waitCorutine);
+            _isGroundTouched = true;
+            StartWaitCorutine();
         }
 
-        _waitCorutine = StartCoroutine(WaitCorutine());
-    }
-
-    private IEnumerator WaitCorutine()
-    {
-        yield return _waitSeconds;
-        
-        WorkDone?.Invoke(this);
+        if (_lastFloor != floor)
+        {
+            ChangeColor();
+            _lastFloor = floor;
+        }
     }
 }

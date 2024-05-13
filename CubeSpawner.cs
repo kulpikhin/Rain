@@ -1,37 +1,21 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Pool;
 
-public class CubeSpawner : MonoBehaviour
+[RequireComponent(typeof (BoxCollider))]
+public class CubeSpawner<F> : MonoBehaviour where F : Figure
 {
-    [SerializeField] private Cube _cubePrefab;
+    [SerializeField] PoolFiguresHier _poolCubes;
 
-    private int _poolCapacity = 35;
-    private int _poolMaxSize = 35;
     private float _spawnCooldawn = 0.2f;
-
-    private float _minScpopeX = 111f;
-    private float _maxScpopeX = 140f;
-    private float _minScpopeZ = 99f;
-    private float _maxScpopeZ = 125f;
-    private float _baseHeight = 11f;
-
     private bool _isActive;
     private Coroutine _spawnCorutine;
     private WaitForSeconds _waitSeconds;
-    private ObjectPool<Cube> _poolCubes;
+    private BoxCollider _boxCollider;
 
     private void Awake()
     {
+        _boxCollider = GetComponent<BoxCollider>();
         _waitSeconds = new WaitForSeconds(_spawnCooldawn);
-        _poolCubes = new ObjectPool<Cube>(
-        createFunc: () => Instantiate(_cubePrefab),
-        actionOnGet: (cube) => ActionOnGet(cube),
-        actionOnRelease: (cube) => ActionOnRelease(cube),
-        actionOnDestroy: (cube) => Destroy(cube),
-        collectionCheck: true,
-        defaultCapacity: _poolCapacity,
-        maxSize: _poolMaxSize);
     }
 
     private void Start()
@@ -39,25 +23,13 @@ public class CubeSpawner : MonoBehaviour
         StartSpawnCorutine();
     }
 
-    private void ActionOnGet(Cube cube)
-    {
-        cube.WorkDone += _poolCubes.Release;
-        cube.gameObject.SetActive(true);
-        cube.transform.position = GetRandomPosition();
-    }
-
-    private void ActionOnRelease(Cube cube)
-    {
-        cube.WorkDone -= _poolCubes.Release;
-        cube.gameObject.SetActive(false);
-    }
-
     private Vector3 GetRandomPosition()
     {
-        float randomPointX = Random.Range(_minScpopeX, _maxScpopeX);
-        float randomPointZ = Random.Range(_minScpopeZ, _maxScpopeZ);
+        Bounds bounds = _boxCollider.bounds;
+        float zSpawnPosition = Random.Range(bounds.min.z, bounds.max.z);
+        float xSpawnPosition = Random.Range(bounds.min.x, bounds.max.x);
 
-        return new Vector3(randomPointX, _baseHeight, randomPointZ);
+        return new Vector3(xSpawnPosition, transform.position.y, zSpawnPosition);
     }
 
     private void StartSpawnCorutine()
@@ -68,14 +40,15 @@ public class CubeSpawner : MonoBehaviour
         }
 
         _isActive = true;
-        _spawnCorutine = StartCoroutine(SpawnCorutine());
+        _spawnCorutine = StartCoroutine(Spawning());
     }
 
-    private IEnumerator SpawnCorutine()
+    private IEnumerator Spawning()
     {
         while (_isActive)
         {
-            _poolCubes.Get();
+            Figure cube = _poolCubes.GetFigure();
+            cube.transform.position = GetRandomPosition();
 
             yield return _waitSeconds;
         }
