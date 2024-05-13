@@ -28,13 +28,12 @@ public class PoolFigures<F> : MonoBehaviour where F : Figure
 
     private void TempActionOnRelease(Figure figure)
     {
-        ActionOnRelease(figure as F);
+        _poolFigures.Release(figure as F);
     }
 
     private void ActionOnRelease(F figure)
     {
         figure.WorkDone -= TempActionOnRelease;
-        _poolFigures.Release(figure);
         figure.gameObject.SetActive(false);
     }
 

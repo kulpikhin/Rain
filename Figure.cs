@@ -9,12 +9,14 @@ public class Figure : MonoBehaviour
 
     private Coroutine _waitCorutine;
     private WaitForSeconds _waitSeconds;
+    private float _lifeTime;
 
     public event Action<Figure> WorkDone;
 
     protected virtual void OnEnable()
     {
-        _waitSeconds = new WaitForSeconds(GetRandomTime());
+        _lifeTime = GetRandomTime();
+        _waitSeconds = new WaitForSeconds(_lifeTime);
     }
 
     private float GetRandomTime()
@@ -36,6 +38,7 @@ public class Figure : MonoBehaviour
     {
         yield return _waitSeconds;
 
+        Debug.Log(_lifeTime);
         WorkDone?.Invoke(this);
     }
 }

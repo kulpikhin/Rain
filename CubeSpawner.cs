@@ -47,7 +47,7 @@ public class CubeSpawner<F> : MonoBehaviour where F : Figure
     {
         while (_isActive)
         {
-            Figure cube = _poolCubes.GetFigure();
+            F cube = _poolCubes.GetFigure() as F;
             cube.transform.position = GetRandomPosition();
 
             yield return _waitSeconds;
