@@ -1,7 +1,6 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Renderer))]
-[RequireComponent(typeof(CubeCollisionHandler))]
+[RequireComponent(typeof(Renderer), typeof(CubeCollisionHandler))]
 public class Cube : Figure
 {
     private CubeCollisionHandler _collisionHandler;
@@ -19,6 +18,7 @@ public class Cube : Figure
 
     protected override void OnEnable()
     {
+        base.OnEnable();
         _isGroundTouched = false;
         _lastFloor = null;
         _renderer.material.color = _baseColor;

@@ -1,16 +1,14 @@
 using System.Collections;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-[RequireComponent(typeof (BoxCollider))]
-public class CubeSpawner<F> : MonoBehaviour where F : Figure
+public class CubeSpawner : FigureSpawner<Figure>
 {
-    [SerializeField] PoolFiguresHier _poolCubes;
-
     private float _spawnCooldawn = 0.2f;
     private bool _isActive;
     private Coroutine _spawnCorutine;
     private WaitForSeconds _waitSeconds;
-    private BoxCollider _boxCollider;
+    private BoxCollider _boxCollider;    
 
     private void Awake()
     {
@@ -47,8 +45,7 @@ public class CubeSpawner<F> : MonoBehaviour where F : Figure
     {
         while (_isActive)
         {
-            F cube = _poolCubes.GetFigure() as F;
-            cube.transform.position = GetRandomPosition();
+            Figure cube = Spawn(GetRandomPosition());
 
             yield return _waitSeconds;
         }
